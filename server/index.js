@@ -1,22 +1,19 @@
 import express from "express";
-import mongoose from "mongoose";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 import cors from "cors";
-mongoose.set("strictQuery", true);
+import router from "./routes/userRoutes.js";
 
+dotenv.config();
+import connectDB from "./config/Database.js";
+connectDB();
+
+const PORT = process.env.PORT;
 const app = express();
-mongoose.connect(
-  "mongodb+srv://ahmaludin:ahmaludin123@cluster0.zfdxwnc.mongodb.net/fotoin?retryWrites=true&w=majority",
-  {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-  }
-);
 
-const db = mongoose.connection;
-db.on("error", (error) => console.log(error));
-db.once("open", () => console.log("Database Connected"));
-
-app.use(cors());
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+app.use(cookieParser());
 app.use(express.json());
+app.use(router);
 
-app.listen("3000", () => console.log("Listening..."));
+app.listen(PORT, () => console.log(`Server Listening at PORT: ${PORT}`));
