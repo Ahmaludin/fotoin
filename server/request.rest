@@ -1,4 +1,5 @@
 GET http://localhost:5000/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2M2QzNmE2Y2JiNTVmMzg2ODBjYTUzYWQiLCJuYW1lIjoiIiwidXNlcm5hbWUiOiJhaG1hbCIsImVtYWlsIjoiYWhtYWxAZ21haWwuY29tIiwicGhvbmVfbnVtYmVyIjoiIiwiYmlvIjoiIiwiZXh0ZXJuYWxfbGluayI6IiIsInByb2ZpbGVfcGhvdG8iOiIiLCJwb3N0cyI6W10sImlhdCI6MTY3NDgzMjgxMSwiZXhwIjoxNjc0ODMyODMxfQ.a0T6KlI_kY2xFWcBxgRKC6oieFGVt55CzC_Rg4Q7e4A
 
 ###
 POST http://localhost:5000/users
@@ -10,3 +11,15 @@ Content-Type: application/json
     "password": "d1A@jdksa",
     "confPassword": "d1A@jdksa"
 }
+
+###
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{
+    "account": "ahmal@gmail.com",
+    "password": "123456"
+}
+
+###
+DELETE  http://localhost:5000/logout
