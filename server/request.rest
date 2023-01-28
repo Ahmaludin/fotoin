@@ -1,25 +1,35 @@
+// Test get users
 GET http://localhost:5000/users
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2M2QzNmE2Y2JiNTVmMzg2ODBjYTUzYWQiLCJuYW1lIjoiIiwidXNlcm5hbWUiOiJhaG1hbCIsImVtYWlsIjoiYWhtYWxAZ21haWwuY29tIiwicGhvbmVfbnVtYmVyIjoiIiwiYmlvIjoiIiwiZXh0ZXJuYWxfbGluayI6IiIsInByb2ZpbGVfcGhvdG8iOiIiLCJwb3N0cyI6W10sImlhdCI6MTY3NDgzMjgxMSwiZXhwIjoxNjc0ODMyODMxfQ.a0T6KlI_kY2xFWcBxgRKC6oieFGVt55CzC_Rg4Q7e4A
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzZDUxODM4N2Q5ODg2YzBmMDc1YjY0YiIsInVzZXJuYW1lIjoicGFrcm96YWtrayIsImlhdCI6MTY3NDkwOTg4MSwiZXhwIjoxNjc0OTA5OTAxfQ.EDK0e2Yty2vRqICTL9h2RBswIrDRK9DBraxAfJv_i8I
 
 ###
+// Test register
 POST http://localhost:5000/users
 Content-Type: application/json
 
 {
-    "username": "riki",
-    "email": "riki@gmail.com",
-    "password": "d1A@jdksa",
-    "confPassword": "d1A@jdksa"
+    "accountSystem": "PakRozakkk@gmail.com",
+    "name": "PakRozakkk",
+    "username": "PakRozakkk",
+    "password": "d1A@jdk!",
+    "confPassword": "d1A@jdk!"
 }
 
 ###
+// Test login
 POST http://localhost:5000/login
 Content-Type: application/json
 
 {
-    "account": "ahmal@gmail.com",
-    "password": "123456"
+    "accountSystem": "PakRozakkk@gmail.com",
+    "password": "d1A@jdk!"
 }
 
 ###
+// Test get refresh token
+GET  http://localhost:5000/token
+
+
+###
+// Test logout
 DELETE  http://localhost:5000/logout

@@ -16,32 +16,27 @@ export const getUsers = async (req, res) => {
 // FUNCTION REGISTER
 export const Register = async (req, res) => {
   // destructuring data dari form register
-  const { username, email, password, confPassword } = req.body;
+  const { accountSystem, name, username, password, confPassword } = req.body;
+
+  accountSystem.toLowerCase();
+  username.toLowerCase();
 
   // validasi username
-  const validUsername = validator.matches(username, /^[a-zA-Z0-9_]+$/);
-  if (!validUsername)
+  if (!validator.matches(username, /^[a-zA-Z0-9_.]+$/))
     return res.status(400).json({
-      msg: "Username hanya boleh menggunakan huruf, angka, dan garis bawah",
+      msg: "Username hanya boleh berisi huruf, angka, garis bawah, dan tanda titik",
     });
-  // validasi email
-  const validEmail = validator.isEmail(email);
-  if (!validEmail) return res.status(400).json({ msg: "Email harus valid" });
 
-  // cek email terdaftar
-  const existEmail = await Users.findOne({ email });
-  if (existEmail) return res.status(400).json({ msg: "Email sudah terdaftar" });
   // cek username terdaftar
-  const existUsername = await Users.findOne({ username });
-  if (existUsername)
+  if (await Users.findOne({ username }))
     return res.status(400).json({ msg: "Username tidak tersedia" });
 
   // cek match password
   if (password !== confPassword)
     return res.status(400).json({ msg: "Password harus sama" });
+
   // validasi password
-  const validPassword = validator.matches(password, /^[a-zA-Z0-9!@#$%]{8,}$/);
-  if (!validPassword)
+  if (!validator.matches(password, /^[a-zA-Z0-9!@#$%]{8,}$/))
     return res.status(400).json({
       msg: "Password harus terdiri dari minimal 8 karakter huruf besar, huruf kecil, angka, dan simbol (!@#$%)",
     });
@@ -50,12 +45,45 @@ export const Register = async (req, res) => {
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  try {
-    await Users.create({
+  // pengecekan form yang diisi oleh pengguna apakah no.handphone atau email
+  const isInputNumeric = validator.isNumeric(accountSystem);
+  let newUser = {};
+  let phone_number = "";
+  let email = "";
+
+  // validasi jika menggunakan no hp
+  if (isInputNumeric) {
+    phone_number = accountSystem;
+    if (!validator.isMobilePhone(phone_number, "any"))
+      return res.status(400).json({ msg: "No handphone harus valid" });
+    if (await Users.findOne({ phone_number }))
+      return res.status(400).json({ msg: "No handphone sudah terdaftar" });
+
+    newUser = {
+      name,
+      username: username.toLowerCase(),
+      phone_number,
+      password: hashedPassword,
+    };
+  }
+  // validasi jika menggunakan email
+  else {
+    email = accountSystem;
+    if (!validator.isEmail(email))
+      return res.status(400).json({ msg: "Email harus valid" });
+    if (await Users.findOne({ email }))
+      return res.status(400).json({ msg: "Email sudah terdaftar" });
+
+    newUser = {
+      name,
       username: username.toLowerCase(),
       email: email.toLowerCase(),
       password: hashedPassword,
-    });
+    };
+  }
+
+  try {
+    await Users.create(newUser);
     res.json({ msg: "Register berhasil" });
   } catch (error) {
     console.log(error);
@@ -65,45 +93,36 @@ export const Register = async (req, res) => {
 // FUNCTION LOGIN
 export const Login = async (req, res) => {
   try {
-    // pengecekan form yang diisi oleh pengguna apakah no.handphone, email, atau username
-    const isPhoneNumber = validator.isMobilePhone(req.body.account, "any");
-    const isEmail = validator.isEmail(req.body.account);
+    const { accountSystem, password } = req.body;
 
+    // pengecekan form yang diisi oleh pengguna apakah no.handphone, email, atau username
+    const isInputNumeric = validator.isNumeric(accountSystem);
     let user = {};
-    if (isPhoneNumber) {
-      user = await Users.findOne({ phone_number: req.body.account });
-      if (!user) return res.status(400).json({ msg: "Akun tidak ditemukan" });
-    } else if (isEmail) {
-      user = await Users.findOne({ email: req.body.account });
+
+    if (isInputNumeric) {
+      user = await Users.findOne({ phone_number: accountSystem });
       if (!user) return res.status(400).json({ msg: "Akun tidak ditemukan" });
     } else {
-      user = await Users.findOne({ username: req.body.account });
-      if (!user) return res.status(400).json({ msg: "Akun tidak ditemukan" });
+      user = await Users.findOne({ email: accountSystem.toLowerCase() });
+      if (!user) {
+        user = await Users.findOne({ username: accountSystem.toLowerCase() });
+        if (!user) return res.status(400).json({ msg: "Akun tidak ditemukan" });
+      }
     }
 
     // compare password
-    const isMatch = await bcrypt.compare(req.body.password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: `Password salah` });
 
-    const isDataUser = {
-      userId: user.id,
-      name: user.name,
-      username: user.username,
-      email: user.email,
-      phone_number: user.phone_number,
-      bio: user.bio,
-      external_link: user.external_link,
-      profile_photo: user.profile_photo,
-      posts: user.posts,
-    };
+    const tokenData = { id: user.id, username: user.username };
 
     // buat accesToken
-    const accesToken = jwt.sign(isDataUser, process.env.JWT_ACCESS_TOKEN, {
+    const accessToken = jwt.sign(tokenData, process.env.JWT_ACCESS_TOKEN, {
       expiresIn: "20s",
     });
 
     // buat refreshToken
-    const refreshToken = jwt.sign(isDataUser, process.env.JWT_REFRESH_TOKEN, {
+    const refreshToken = jwt.sign(tokenData, process.env.JWT_REFRESH_TOKEN, {
       expiresIn: "1d",
     });
 
@@ -118,7 +137,7 @@ export const Login = async (req, res) => {
     });
 
     // meresponse client accesToken
-    res.json({ accesToken });
+    res.json({ accessToken });
   } catch (error) {
     console.log(error);
   }
