@@ -1,9 +1,48 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import jwt_decode from "jwt-decode";
 import "./Home.scss";
 
 const Home = () => {
+  const [username, setUsername] = useState("");
+  const [token, setToken] = useState("");
+  const [tokenExpire, setTokenExpire] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    refreshToken();
+  }, []);
+
+  // const refreshToken = async () => {
+  //   try {
+  //     const response = await axios.get("http://localhost:5000/token");
+  //     setToken(response.data.accessToken);
+
+  //     const tokenDecode = jwtDecode(response.data.accessToken);
+  //     setUsername(tokenDecode.username);
+  //     setTokenExpire(tokenDecode.exp);
+  //   } catch (error) {
+  //     error.response && navigate("/login");
+  //     console.log(error.response);
+  //   }
+  // };
+
+  const refreshToken = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/token");
+      setToken(response.data.accessToken);
+      const decoded = jwt_decode(response.data.accessToken);
+      console.log(decoded);
+      setUsername(decoded.username);
+      setTokenExpire(decoded.exp);
+    } catch (error) {
+      if (error.response) {
+        navigate("/login");
+      }
+    }
+  };
+
   const inputComment = (e) => {
     e.target.style.height = "auto";
     e.target.style.height = e.target.scrollHeight + "px";

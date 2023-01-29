@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./RegisterAndLogin.scss";
 
@@ -11,8 +11,24 @@ const Register = () => {
   const [confPassword, setConfPassword] = useState("");
   const [msg, setMsg] = useState("");
 
-  const Register = (e) => {
+  const navigate = useNavigate();
+
+  const Register = async (e) => {
     e.preventDefault();
+    try {
+      await axios.post("http://localhost:5000/users", {
+        accountSystem,
+        name,
+        username,
+        password,
+        confPassword,
+      });
+      navigate("/login");
+    } catch (error) {
+      if (error.response) {
+        setMsg(error.response.data.msg);
+      }
+    }
   };
 
   return (
@@ -62,7 +78,7 @@ const Register = () => {
 
               {msg && <p className="error-msg">{msg}</p>}
 
-              <button type="button">Daftar</button>
+              <button type="submit">Daftar</button>
 
               <p className="login-question">
                 Sudah punya akun? <Link to="/login">Login</Link>

@@ -36,9 +36,13 @@ export const Register = async (req, res) => {
     return res.status(400).json({ msg: "Password harus sama" });
 
   // validasi password
-  if (!validator.matches(password, /^[a-zA-Z0-9!@#$%]{8,}$/))
+  const validPassword = validator.matches(
+    password,
+    /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Z\d!@#$%^&*]{8,}$/
+  );
+  if (!validPassword)
     return res.status(400).json({
-      msg: "Password harus terdiri dari minimal 8 karakter huruf besar, huruf kecil, angka, dan simbol (!@#$%)",
+      msg: "Password harus terdiri dari minimal 8 karakter huruf besar, huruf kecil, angka, dan simbol (!@#$%^&*)",
     });
 
   // melakukan hash password
